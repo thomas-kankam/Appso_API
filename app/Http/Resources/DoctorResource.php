@@ -22,7 +22,6 @@ class DoctorResource extends JsonResource
                 'middle_name' => $this->when($this->middle_name, $this->middle_name),
                 'role' => $this->role,
                 'email' => $this->email,
-                'agree' => $this->agree,
                 'gender' => $this->gender,
                 'date_of_birth' => $this->date_of_birth,
                 'phone_number' => $this->phone_number,
@@ -41,9 +40,7 @@ class DoctorResource extends JsonResource
                 'data_range' => $this->data_range,
                 'no_show_fee' => $this->no_show_fee,
                 'account_status' => $this->account_status,
-                'verified' => $this->verified,
-                'created_at' => $this->created_at,
-                'updated_at' => $this->updated_at,
+                'is_verified' => $this->verified
             ],
         ];
     }

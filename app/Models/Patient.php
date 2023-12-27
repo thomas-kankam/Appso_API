@@ -12,15 +12,16 @@ class Patient extends Model
     use HasFactory, HasApiTokens, Notifiable;
 
     protected $fillable = [
+        'full_name',
         'first_name',
         'last_name',
         'middle_name',
         'role',
-        'otp',
         'email',
         'password',
         'gender',
         'date_of_birth',
+        'age',
         'phone_number',
         'bio_info',
         'national_id',
@@ -30,7 +31,7 @@ class Patient extends Model
         'passport_picture',
         'occupation',
         'account_status',
-        'verified'
+        'is_verified'
     ];
 
     protected $hidden = [

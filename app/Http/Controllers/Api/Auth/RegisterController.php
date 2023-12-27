@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Doctor\RegistrationRequest;
-
+use App\Models\Patient;
 
 class RegisterController extends Controller
 {
@@ -82,6 +82,69 @@ class RegisterController extends Controller
     }
 
 
+    public function registerPatient(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'full_name' => ['required', 'string', 'max:255'],
+            'phone_number' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:patients'],
+            'password' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 400);
+        }
+
+        $patient = null;
+        $pin = null;
+        $email = $request->email;
+
+        // Use a database transaction for atomicity
+        DB::transaction(function () use ($request, &$patient, $email, &$pin) {
+            $patient = Patient::create([
+                'full_name' => $request->full_name,
+                'phone_number' => $request->phone_number,
+                'email' => $email,
+                "password" => Hash::make($request->password),
+            ]);
+
+            if ($patient) {
+                $verify2 =  DB::table('password_reset_tokens')->where([
+                    ['email', $email]
+                ]);
+
+                if ($verify2->exists()) {
+                    $verify2->delete();
+                }
+
+                $pin = rand(100000, 999999);
+
+                // Include an expiration time for the verification token
+                DB::table('password_reset_tokens')->insert([
+                    'email' => $email,
+                    'token' => $pin,
+                    'created_at' => now(),
+                    'expires_at' => now()->addMinutes(30),
+                ]);
+            }
+        });
+
+        // Send a verification email with the pin
+        Mail::to($email)->send(new VerifyEmail($pin));
+
+        // Generate a token for the newly registered patient
+        $token = $patient ? $patient->createToken('ApiToken_' . $patient->full_name)->plainTextToken : null;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successful created patient. Please check your email for a 6-digit pin to verify your email.',
+            'data' => $patient,
+            'token' => $token,
+            'status' => 201
+        ]);
+    }
+
+
     public function verifyEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -122,6 +185,46 @@ class RegisterController extends Controller
         }
     }
 
+
+    public function verifyEmailPatient(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => ['required'],
+            'email' => ['required', 'exists:patients,email'],
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 400);
+        }
+
+        $tokenRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$tokenRecord) {
+            return new JsonResponse(['success' => false, 'message' => "Invalid PIN"], 400);
+        }
+
+        // Delete the token record after verifying
+        DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->delete();
+
+        // Update the user's email_verified_at timestamp
+        $user = Patient::where('email', $request->email)->first();
+
+        if ($user) {
+            $user->email_verified_at = now();
+            $user->is_verified = true;
+            $user->save();
+
+            return new JsonResponse(['success' => true, 'message' => "Email is verified"], 200);
+        } else {
+            return new JsonResponse(['success' => false, 'message' => "User not found"], 404);
+        }
+    }
 
 
     public function resendPin(Request $request)

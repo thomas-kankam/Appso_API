@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('consultation_fee')->nullable()->default(null);
             $table->date('date_range')->nullable()->default(null);
             $table->string('no_show_fee')->nullable()->default(null);
-            $table->string('account_status')->nullable()->default(null);
+            $table->string('account_status')->nullable()->default('active');
             $table->boolean('is_verified')->default(false);
             $table->timestamp("phone_verified_at")->nullable();
             $table->timestamp('email_verified_at')->nullable();
