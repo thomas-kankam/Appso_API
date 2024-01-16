@@ -34,7 +34,6 @@ class RegisterController extends Controller
             $doctor = Doctor::create([
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
-                'role' => $request->role,
                 'email' => $email,
                 'phone_number' => $request->phone_number,
                 'hospital_name' => $request->hospital_name,

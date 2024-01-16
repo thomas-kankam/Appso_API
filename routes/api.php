@@ -2,12 +2,19 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Like\LikeController;
+use App\Http\Controllers\Post\PostController;
+use App\Http\Controllers\Reply\ReplyController;
+use App\Http\Controllers\Route\RouteController;
 use App\Http\Controllers\Doctor\DoctorController;
+use App\Http\Controllers\Rating\RatingController;
 use App\Http\Controllers\Api\Auth\LoginController;
+use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\ResetPasswordController;
 use App\Http\Controllers\Api\Auth\ForgotPasswordController;
+use App\Http\Controllers\PostCategory\PostCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,14 +38,34 @@ Route::match(['get', 'post'], '/patient/login', [LoginController::class, 'loginP
 // Resend email token
 Route::post('/resend/email/token', [RegisterController::class, 'resendPin'])->name('resendPin');
 
+// Verify email
+Route::post('doctor/email/verify', [RegisterController::class, 'verifyEmail']);
+Route::post('patient/email/verify', [RegisterController::class, 'verifyEmailPatient']);
+
 Route::middleware('auth:sanctum')->group(function () {
-    // Verify email
-    Route::post('doctor/email/verify', [RegisterController::class, 'verifyEmail']);
-    Route::post('patient/email/verify', [RegisterController::class, 'verifyEmailPatient']);
 
     // CRUD routes for doctors and patients
-    Route::apiResource('doctors', DoctorController::class);
-    Route::apiResource('patients', PatientController::class);
+    Route::apiResource('doctors', DoctorController::class)->only(['index', 'show', 'destroy']);
+    Route::apiResource('patients', PatientController::class)->only(['index', 'show', 'destroy']);
+
+    // Rating routes
+    // Route::get('/ratings/create/{doctorId}', [RatingController::class, 'create']);
+    // Route::post('/ratings/store/{doctorId}', [RatingController::class, 'store'])->name('ratings.store');
+
+    // comments routes
+    Route::apiResource('comments', CommentController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Like routes
+    Route::apiResource('like', LikeController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Post routes
+    Route::apiResource('post', PostController::class)->except(['show']);
+
+    // Post Category routes
+    Route::apiResource('postCategory', PostCategoryController::class)->except(['show']);
+
+    // Reply routes
+    Route::apiResource('reply', ReplyController::class)->except(['show']);
 
     // Logout route
     Route::middleware('verify.api')->group(function () {

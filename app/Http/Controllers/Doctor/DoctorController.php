@@ -28,9 +28,10 @@ class DoctorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Doctor $doctor)
+    public function show($id)
     {
-        //
+        $doctor = Doctor::findOrFail($id);
+        return response()->json($doctor);
     }
 
     /**
@@ -45,5 +46,11 @@ class DoctorController extends Controller
      */
     public function destroy(Doctor $doctor)
     {
+        try {
+            $doctor->delete();
+            return response()->json(['message' => 'Doctor deleted successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Doctor not deleted']);
+        }
     }
 }

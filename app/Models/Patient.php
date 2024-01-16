@@ -15,8 +15,8 @@ class Patient extends Model
         'full_name',
         'first_name',
         'last_name',
+        'full_name',
         'middle_name',
-        'role',
         'email',
         'password',
         'gender',
@@ -44,4 +44,14 @@ class Patient extends Model
         'email_verified_at' => 'datetime',
         "phone_verified_at" => "datetime",
     ];
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, "patient_id");
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class, "patient_id");
+    }
 }

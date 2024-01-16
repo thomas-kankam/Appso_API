@@ -28,9 +28,10 @@ class PatientController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Patient $patient)
+    public function show($id)
     {
-        //
+        $patient = Patient::findOrFail($id);
+        return response()->json($patient);
     }
 
     /**
@@ -46,6 +47,11 @@ class PatientController extends Controller
      */
     public function destroy(Patient $patient)
     {
-        //
+        try {
+            $patient->delete();
+            return response()->json(['message' => 'Patient deleted successfully']);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Patient not deleted']);
+        }
     }
 }

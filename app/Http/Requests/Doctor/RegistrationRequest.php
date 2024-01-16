@@ -19,7 +19,6 @@ class RegistrationRequest extends FormRequest
         return [
             'first_name' => 'required|string',
             'last_name' => 'required|string',
-            'role' => 'required|string',
             'email' => 'required|unique:doctors,email',
             'phone_number' => 'required|unique:doctors,phone_number',
             'hospital_name' => 'required|string',
@@ -36,7 +35,6 @@ class RegistrationRequest extends FormRequest
         return [
             "first_name" => "Your first name is required",
             "last_name" => "Your last name is required",
-            "role" => "Your role is required",
             "email" => "Your email is required",
             "email.unique" => "This email is already registered",
             "phone_number.required" => "Your phone number is required",

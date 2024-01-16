@@ -13,8 +13,8 @@ class Doctor extends Model
     protected $fillable = [
         'first_name',
         'last_name',
+        'full_name',
         'middle_name',
-        'role',
         'email',
         'password',
         'gender',
@@ -50,4 +50,19 @@ class Doctor extends Model
         'email_verified_at' => 'datetime',
         "phone_verified_at" => "datetime",
     ];
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, "doctor_id");
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(Like::class, "doctor_id");
+    }
 }
