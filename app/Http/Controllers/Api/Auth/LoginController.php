@@ -23,7 +23,8 @@ class LoginController extends Controller
             return new JsonResponse([
                 'success' => false,
                 'message' => $validator->errors(),
-            ], 422);
+                'status' => 422
+            ]);
         }
 
         $user = null;
@@ -35,7 +36,8 @@ class LoginController extends Controller
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Invalid Credentials',
-            ], 400);
+                'status' => 400
+            ]);
         }
 
         // Generate a token for the authenticated user
@@ -44,7 +46,9 @@ class LoginController extends Controller
         return new JsonResponse([
             'success' => true,
             'token' => $token,
-        ], 200);
+            'status' => 200,
+            'data' => $user
+        ]);
     }
 
 
@@ -59,7 +63,8 @@ class LoginController extends Controller
             return new JsonResponse([
                 'success' => false,
                 'message' => $validator->errors(),
-            ], 422);
+                'status' => 422
+            ]);
         }
 
         $user = null;
@@ -71,7 +76,8 @@ class LoginController extends Controller
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Invalid Credentials',
-            ], 400);
+                'status' => 400
+            ]);
         }
 
         // Generate a token for the authenticated user
@@ -80,7 +86,9 @@ class LoginController extends Controller
         return new JsonResponse([
             'success' => true,
             'token' => $token,
-        ], 200);
+            'status' => 200,
+            'data' => $user
+        ]);
     }
 
 
@@ -92,6 +100,7 @@ class LoginController extends Controller
         return new JsonResponse([
             'success' => true,
             'message' => 'Logged Out Successfully',
-        ], 200);
+            'status' => 200
+        ]);
     }
 }

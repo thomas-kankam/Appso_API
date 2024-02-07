@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Models\Doctor;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Doctor\UpdateDoctorProfileRequest;
+use Illuminate\Support\Facades\Http;
 use App\Http\Resources\DoctorResource;
+use App\Models\Reply;
 
 class DoctorController extends Controller
 {
@@ -28,17 +32,18 @@ class DoctorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Doctor $doctor)
     {
-        $doctor = Doctor::findOrFail($id);
-        return response()->json($doctor);
+        return new DoctorResource($doctor);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Doctor $doctor)
+    public function update(UpdateDoctorProfileRequest $request, Doctor $doctor)
     {
+        $doctor->update($request->validated());
+        return new DoctorResource($doctor);
     }
 
     /**

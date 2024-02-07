@@ -27,16 +27,19 @@ use App\Http\Controllers\PostCategory\PostCategoryController;
 |
 */
 
+// Route::apiResource('doctors', DoctorController::class)->only(['index', 'show', 'update', 'destroy']);
+
+
 // Register routes
-Route::post('/doctor/register', [RegisterController::class, 'registerDoctor'])->name('register.doctor');
-Route::post('/patient/register', [RegisterController::class, 'registerPatient'])->name('register.patient');
+Route::post('doctor/register', [RegisterController::class, 'registerDoctor'])->name('register.doctor');
+Route::post('patient/register', [RegisterController::class, 'registerPatient'])->name('register.patient');
 
 // Login routes
 Route::match(['get', 'post'], '/doctor/login', [LoginController::class, 'loginDoctor'])->name('login.doctor');
 Route::match(['get', 'post'], '/patient/login', [LoginController::class, 'loginPatient'])->name('login.patient');
 
 // Resend email token
-Route::post('/resend/email/token', [RegisterController::class, 'resendPin'])->name('resendPin');
+Route::post('resend/email/token', [RegisterController::class, 'resendPin'])->name('resendPin');
 
 // Verify email
 Route::post('doctor/email/verify', [RegisterController::class, 'verifyEmail']);
@@ -45,7 +48,7 @@ Route::post('patient/email/verify', [RegisterController::class, 'verifyEmailPati
 Route::middleware('auth:sanctum')->group(function () {
 
     // CRUD routes for doctors and patients
-    Route::apiResource('doctors', DoctorController::class)->only(['index', 'show', 'destroy']);
+    Route::apiResource('doctors', DoctorController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::apiResource('patients', PatientController::class)->only(['index', 'show', 'destroy']);
 
     // Rating routes
@@ -69,7 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Logout route
     Route::middleware('verify.api')->group(function () {
-        Route::post('/logout', [LoginController::class, 'logout']);
+        Route::post('logout', [LoginController::class, 'logout']);
     });
 });
 
@@ -78,7 +81,7 @@ Route::post('doctor/forgot-password', [ForgotPasswordController::class, 'forgotP
 Route::post('patient/forgot-password', [ForgotPasswordController::class, 'forgotPasswordPatient']);
 
 // Verify pin
-Route::post('/verify/pin', [ForgotPasswordController::class, 'verifyPin']);
+Route::post('verify/pin', [ForgotPasswordController::class, 'verifyPin']);
 
 // Reset password
 Route::post('doctor/reset-password', [ResetPasswordController::class, 'resetPassword']);

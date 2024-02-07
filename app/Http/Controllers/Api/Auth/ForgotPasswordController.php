@@ -23,14 +23,14 @@ class ForgotPasswordController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 422);
+            return new JsonResponse(['success' => false, 'message' => $validator->errors(), 'status' => 422]);
         }
 
         $email = $request->input('email');
 
         // Check if the doctor with the given email exists
         if (!Doctor::where('email', $email)->exists()) {
-            return new JsonResponse(['success' => false, 'message' => "This email does not exist"], 400);
+            return new JsonResponse(['success' => false, 'message' => "This email does not exist", 'status' => 400]);
         }
 
         // Delete any existing password reset tokens for the email
@@ -53,7 +53,8 @@ class ForgotPasswordController extends Controller
         return new JsonResponse([
             'success' => true,
             'message' => "Please check your email for a 6-digit pin",
-        ], 200);
+            'status' => 200
+        ]);
     }
 
 
@@ -105,7 +106,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return new JsonResponse(['success' => false, 'message' => $validator->errors()], 422);
+            return new JsonResponse(['success' => false, 'message' => $validator->errors(), 'status' => 422]);
         }
 
         $check = DB::table('password_reset_tokens')
@@ -119,7 +120,7 @@ class ForgotPasswordController extends Controller
             if ($difference > 3600) {
                 // Token expired
                 $check->delete();
-                return new JsonResponse(['success' => false, 'message' => 'Token Expired'], 400);
+                return new JsonResponse(['success' => false, 'message' => 'Token Expired', 'status' => 400]);
             }
 
             // Token is valid, delete it
@@ -127,13 +128,15 @@ class ForgotPasswordController extends Controller
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'You can now reset your password'
-            ], 200);
+                'message' => 'You can now reset your password',
+                'status' => 200
+            ]);
         }
 
         return new JsonResponse([
             'success' => false,
-            'message' => 'Invalid token'
-        ], 401);
+            'message' => 'Invalid token',
+            'status' => 401
+        ]);
     }
 }

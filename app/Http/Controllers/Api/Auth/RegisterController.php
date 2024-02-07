@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api\Auth;
 
 use Carbon\Carbon;
 use App\Models\Doctor;
+use App\Models\Patient;
 use App\Mail\VerifyEmail;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +15,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\Doctor\RegistrationRequest;
-use App\Models\Patient;
 
 class RegisterController extends Controller
 {
@@ -21,49 +22,55 @@ class RegisterController extends Controller
     {
         $request->validated();
 
-        $national_id_front_image = $request->file('national_id_front_image')->store('public/images');
-        $national_id_back_image = $request->file('national_id_back_image')->store('public/images');
-        $passport_picture = $request->file('passport_picture')->store('public/images');
+        // $national_id_front_image = $request->file('national_id_front_image')->store('images');
+        // $national_id_back_image = $request->file('national_id_back_image')->store('images');
+        // $passport_picture = $request->file('passport_picture')->store('images');
 
         $doctor = null;
         $pin = null;
         $email = $request->email;
 
-        // Use a database transaction for atomicity
-        DB::transaction(function () use ($request, &$doctor, $email, &$pin, $national_id_front_image, $national_id_back_image, $passport_picture) {
-            $doctor = Doctor::create([
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'email' => $email,
-                'phone_number' => $request->phone_number,
-                'hospital_name' => $request->hospital_name,
-                'national_id' => $request->national_id,
-                'national_id_front_image' => $national_id_front_image,
-                'national_id_back_image' => $national_id_back_image,
-                'passport_picture' => $passport_picture,
-                "password" => Hash::make($request->password),
+        // Remove leading '0' from the msisdn field (if present)
+        $phone_number = ltrim($request->phone_number, '0');
+
+        // Check if the msisdn field starts with '233'
+        if (!Str::startsWith($phone_number, '233')) {
+            // Append '233' as a prefix to the msisdn field
+            $phone_number = '233' . $phone_number;
+        }
+
+        $doctor = Doctor::create([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $email,
+            'phone_number' => $phone_number,
+            'hospital_name' => $request->hospital_name,
+            'national_id' => $request->national_id,
+            // 'national_id_front_image' => $national_id_front_image,
+            // 'national_id_back_image' => $national_id_back_image,
+            // 'passport_picture' => $passport_picture,
+            "password" => Hash::make($request->password),
+        ]);
+
+        if ($doctor) {
+            $verify2 =  DB::table('password_reset_tokens')->where([
+                ['email', $email]
             ]);
 
-            if ($doctor) {
-                $verify2 =  DB::table('password_reset_tokens')->where([
-                    ['email', $email]
-                ]);
-
-                if ($verify2->exists()) {
-                    $verify2->delete();
-                }
-
-                $pin = rand(100000, 999999);
-
-                // Include an expiration time for the verification token
-                DB::table('password_reset_tokens')->insert([
-                    'email' => $email,
-                    'token' => $pin,
-                    'created_at' => now(),
-                    'expires_at' => now()->addMinutes(30),
-                ]);
+            if ($verify2->exists()) {
+                $verify2->delete();
             }
-        });
+
+            $pin = rand(100000, 999999);
+
+            // Include an expiration time for the verification token
+            DB::table('password_reset_tokens')->insert([
+                'email' => $email,
+                'token' => $pin,
+                'created_at' => now(),
+                'expires_at' => now()->addMinutes(30),
+            ]);
+        }
 
         // Send a verification email with the pin
         Mail::to($email)->send(new VerifyEmail($pin));
@@ -178,7 +185,12 @@ class RegisterController extends Controller
             $user->is_verified = true;
             $user->save();
 
-            return new JsonResponse(['success' => true, 'message' => "Email is verified"], 200);
+            return new JsonResponse([
+                'success' => true,
+                'message' => "Email is verified",
+                'status' => 200,
+                'data' => $user,
+            ]);
         } else {
             return new JsonResponse(['success' => false, 'message' => "User not found"], 404);
         }
@@ -260,7 +272,8 @@ class RegisterController extends Controller
             return new JsonResponse([
                 'success' => true,
                 'message' => 'A verification mail has been resent. Token expires at ' . $expirationTime,
-            ], 200);
+                'status' => 200
+            ]);
         }
     }
 }
